@@ -1,5 +1,6 @@
 package com.rakaneth.wbm.ui.screens;
 
+import com.badlogic.gdx.graphics.Colors;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -9,10 +10,7 @@ import com.rakaneth.wbm.system.Werewolf;
 import com.rakaneth.wbm.system.WolfRNG;
 import com.rakaneth.wbm.ui.UiUtils;
 import com.rakaneth.wbm.system.GameObject;
-import squidpony.squidgrid.gui.gdx.DefaultResources;
-import squidpony.squidgrid.gui.gdx.SparseLayers;
-import squidpony.squidgrid.gui.gdx.SquidInput;
-import squidpony.squidgrid.gui.gdx.TextCellFactory;
+import squidpony.squidgrid.gui.gdx.*;
 import squidpony.squidgrid.mapping.DungeonUtility;
 import squidpony.squidgrid.mapping.SectionDungeonGenerator;
 import squidpony.squidgrid.mapping.SerpentMapGenerator;
@@ -48,6 +46,7 @@ public class MainScreen extends WolfScreen {
     char[][] baseMap = smg.generate();
     sdg.addBoulders(SectionDungeonGenerator.CAVE, 15);
     sdg.addLake(5);
+    sdg.addGrass(SectionDungeonGenerator.CAVE, 25);
     char[][] finalMap = sdg.generate(baseMap, smg.getEnvironment());
     gameState.setMap(finalMap);
     gameState.getPlayer().setPos(gameState.randomFloor());
@@ -66,7 +65,35 @@ public class MainScreen extends WolfScreen {
       for (int y = top; y < top + mapH; y++) {
          if (!isOOB(x, y)) {
            char tile = gameState.getMap()[x][y];
-           mapLayers.put(x-left, y-top, tile);
+           char toDisplay;
+           String toColor;
+           switch (tile) {
+             case '#':
+               toDisplay = '\u2663';
+               toColor = "Green";
+               break;
+             case ',':
+               toDisplay = '~';
+               toColor = "CW Light Blue";
+               break;
+             case '~':
+               toDisplay = '~';
+               toColor = "Blue";
+               break;
+             case ':':
+               toDisplay = ':';
+               toColor = "Silver Grey";
+               break;
+             case '"':
+               toDisplay = '"';
+               toColor = "Green";
+               break;
+             default:
+               toDisplay = '.';
+               toColor = "CW Light Brown";
+               break;
+           }
+           mapLayers.put(x-left, y-top, toDisplay, (SColor) Colors.get(toColor));
          }
       }
     }
