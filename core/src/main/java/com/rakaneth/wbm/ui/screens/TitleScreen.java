@@ -9,25 +9,18 @@ import com.rakaneth.wbm.ui.UiUtils;
 import squidpony.squidgrid.gui.gdx.*;
 
 public class TitleScreen extends WolfScreen {
-  private SpriteBatch     batch;
-  private SquidInput      input;
-  private Stage           stage;
-  private StretchViewport vport;
-  private TextCellFactory slab;
-  private SparseLayers    display;
+  private SparseLayers display;
 
   public TitleScreen(SpriteBatch batch) {
     super("title");
-    this.batch = batch;
-    slab = UiUtils.tweakTCF(DefaultResources.getSlabFamily(), 1.1f, 1.35f);
+    TextCellFactory slab = UiUtils.tweakTCF(DefaultResources.getSlabFamily(), 1.1f, 1.35f);
     vport = new StretchViewport(UiUtils.cellWidth * 100, UiUtils.cellHeight * 40);
-    stage = new Stage(vport, this.batch);
+    stage = new Stage(vport, batch);
     input = new SquidInput((key, alt, ctrl, shift) -> {
-      System.out.println("Key was pressed: " + String.valueOf(key));
+      ScreenManager.setScreen("main");
     });
     display = new SparseLayers(100, 40, UiUtils.cellWidth, UiUtils.cellHeight, slab);
     stage.addActor(display);
-    Gdx.input.setInputProcessor(new InputMultiplexer(stage, input));
   }
 
   @Override
@@ -39,7 +32,8 @@ public class TitleScreen extends WolfScreen {
   }
 
   @Override
-  public void resize(int width, int height) {
-    vport.update(width, height, false);
+  public void enter() {
+    activateInput();
+    super.enter();
   }
 }

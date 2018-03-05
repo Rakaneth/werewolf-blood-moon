@@ -8,7 +8,7 @@ public final class ScreenManager {
   private static WolfScreen curScreen;
 
   public static void register(WolfScreen... screensToAdd) {
-    for (WolfScreen screen: screensToAdd) {
+    for (WolfScreen screen : screensToAdd) {
       screens.put(screen.getName(), screen);
     }
   }
@@ -19,5 +19,7 @@ public final class ScreenManager {
     curScreen.enter();
   }
 
-  public static WolfScreen getCurScreen() { return curScreen; }
+  public static WolfScreen getCurScreen() {
+    return curScreen;
+  }
 }

@@ -1,10 +1,10 @@
-package com.rakaneth.wbm.rng;
+package com.rakaneth.wbm.system;
 
 import squidpony.squidmath.StatefulRNG;
 
 public final class WolfRNG {
-  private StatefulRNG rng;
-  private static WolfRNG instance;
+  private        StatefulRNG rng;
+  private static WolfRNG     instance;
 
   private WolfRNG(long seed) {
     rng = new StatefulRNG(seed);
