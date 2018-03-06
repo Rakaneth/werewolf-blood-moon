@@ -13,10 +13,12 @@ public class MoveCommand implements Command {
 
   @Override
   public int execute(Actor actor, GameState state) {
+    boolean result = actor.tryMove(direction, state.getMap());
+    if (result) state.mapDirty = true;
     if (actor instanceof Werewolf) {
-      return actor.tryMove(direction, state.getMap()) ? 10 - ((Werewolf)actor).getStr() : 0;
+      return result ? 10 - ((Werewolf)actor).getStr() : 0;
     } else {
-      return actor.tryMove(direction, state.getMap()) ? 5 : 0;
+      return result ? 5 : 0;
     }
   }
 }

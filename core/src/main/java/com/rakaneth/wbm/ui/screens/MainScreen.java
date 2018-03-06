@@ -5,11 +5,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.rakaneth.wbm.system.GameState;
-import com.rakaneth.wbm.system.Werewolf;
-import com.rakaneth.wbm.system.WolfRNG;
+import com.rakaneth.wbm.system.*;
+import com.rakaneth.wbm.system.commands.Command;
+import com.rakaneth.wbm.system.commands.MoveCommand;
 import com.rakaneth.wbm.ui.UiUtils;
-import com.rakaneth.wbm.system.GameObject;
+import javafx.util.Pair;
+import squidpony.squidgrid.Direction;
 import squidpony.squidgrid.gui.gdx.*;
 import squidpony.squidgrid.mapping.DungeonUtility;
 import squidpony.squidgrid.mapping.SectionDungeonGenerator;
@@ -20,20 +21,68 @@ import squidpony.squidmath.GreasedRegion;
 
 public class MainScreen extends WolfScreen {
   private SparseLayers mapLayers;
+  private SquidMessageBox msgs;
+  private SquidPanel beastPanel;
   private GameState gameState;
   private final int mapW = 100;
   private final int mapH = 36;
+  private final int msgW = 34;
+  private final int msgH = 4;
+  private final int beastW = 33;
+  private final int beastH = 4;
 
   public MainScreen(SpriteBatch batch) {
     super("main");
+    float cellWidth = UiUtils.cellWidth;
+    float cellHeight = UiUtils.cellHeight;
     vport = new StretchViewport(100 * UiUtils.cellWidth, 40 * UiUtils.cellHeight);
     stage = new Stage(vport, batch);
     input = new SquidInput((key, alt, ctrl, shift) -> {
-      System.out.println("Key was pressed on main screen: " + key);
+      Scheduler engine = gameState.getEngine();
+      Direction direction = Direction.NONE;
+      switch (key) {
+        case SquidInput.RIGHT_ARROW:
+          direction = Direction.RIGHT;
+          break;
+        case SquidInput.DOWN_RIGHT_ARROW:
+          direction = Direction.DOWN_RIGHT;
+          break;
+        case SquidInput.DOWN_ARROW:
+          direction = Direction.DOWN;
+          break;
+        case SquidInput.DOWN_LEFT_ARROW:
+          direction = Direction.DOWN_LEFT;
+          break;
+        case SquidInput.LEFT_ARROW:
+          direction = Direction.LEFT;
+          break;
+        case SquidInput.UP_LEFT_ARROW:
+          direction = Direction.UP_LEFT;
+          break;
+        case SquidInput.UP_ARROW:
+          direction = Direction.UP;
+          break;
+        case SquidInput.UP_RIGHT_ARROW:
+          direction = Direction.UP_RIGHT;
+          break;
+        default:
+          direction = Direction.NONE;
+          break;
+      }
+      if (direction != Direction.NONE) {
+        engine.processCmd(gameState.getPlayer(), new MoveCommand(direction), gameState);
+      }
     });
     TextCellFactory slab = UiUtils.tweakTCF(DefaultResources.getSlabFamily(), 1.1f, 1.35f);
-    mapLayers = new SparseLayers(mapW, mapH, UiUtils.cellWidth, UiUtils.cellHeight, slab);
-    mapLayers.setBounds(0, UiUtils.cellHeight * 4, UiUtils.cellWidth * mapW, UiUtils.cellHeight * mapH);
+    mapLayers = new SparseLayers(mapW, mapH, cellWidth, cellHeight, slab);
+    mapLayers.setBounds(0,cellHeight * 4, cellWidth * mapW, cellHeight * mapH);
+    msgs = new SquidMessageBox(msgW, msgH, slab.copy());
+    msgs.setBounds(0, 0, msgW * cellWidth, msgH * cellHeight);
+    msgs.appendWrappingMessage(toICString("[Green][*]Welcome[] to Werewolf: Blood Moon!"));
+    beastPanel = new SquidPanel(beastW, beastH, slab.copy());
+    beastPanel.setBounds(msgW * cellWidth, 0, beastW * cellWidth, beastH * cellWidth);
+    stage.addActor(msgs);
+    stage.addActor(beastPanel);
     stage.addActor(mapLayers);
   }
 
@@ -108,6 +157,30 @@ public class MainScreen extends WolfScreen {
     }
   }
 
+  private void drawMsgs() {
+    msgs.erase();
+    msgs.putBordersCaptioned(SColor.WHITE, toICString("Messages"));
+  }
+
+  private void drawBeast() {
+    Werewolf player = gameState.getPlayer();
+    beastPanel.erase();
+    beastPanel.putBordersCaptioned(SColor.WHITE, toICString("Beast"));
+    beastPanel.put(1, 1, "Man");
+    beastPanel.put(28, 1, "Wolf");
+    UiUtils.drawBar(beastPanel, 2, 2, 30, player.getBeast(), 100f, SColor.GOLD, SColor.CRIMSON);
+  }
+
+  private void drawClock() {
+
+  }
+
+  private void drawHUD() {
+    drawMsgs();
+    drawBeast();
+    //drawClock();
+  }
+
   @Override
   public void enter() {
     activateInput();
@@ -119,8 +192,21 @@ public class MainScreen extends WolfScreen {
 
   @Override
   public void render () {
-    if (input.hasNext()) input.next();
-    drawGameState();
+    Scheduler engine = gameState.getEngine();
+    if (engine.isPaused()) {
+      if (input.hasNext()) input.next();
+    } else {
+      Pair<Actor, Integer> upNext = engine.getNext();
+      if (upNext.getKey() == gameState.getPlayer()) {
+        engine.pause();
+      } else {
+        gameState.doUpkeep(upNext.getValue());
+        Command cmd = gameState.getAction(upNext.getKey());
+        engine.processCmd(upNext.getKey(), cmd, gameState);
+      }
+    }
+    if (gameState.mapDirty) drawGameState();
+    if (gameState.hudDirty) drawHUD();
     stage.act();
     stage.draw();
   }

@@ -10,6 +10,7 @@ public interface Actor {
   int nextTurn();
   Coord getPos();
   void setPos(Coord c);
+  void changeNextTurn(int amt);
   default boolean tryMove(Direction d, char[][] map) {
     String walkables = "\".,:";
     Coord dest = getPos().translate(d);

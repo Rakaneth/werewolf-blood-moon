@@ -1,5 +1,7 @@
 package com.rakaneth.wbm.system;
 
+import com.rakaneth.wbm.system.commands.Command;
+import com.rakaneth.wbm.system.commands.WaitCommand;
 import squidpony.squidgrid.mapping.DungeonUtility;
 import squidpony.squidmath.Coord;
 
@@ -12,6 +14,8 @@ public class GameState {
   private Scheduler engine = new Scheduler();
   private Werewolf player;
   private DungeonUtility utility = new DungeonUtility();
+  public boolean hudDirty = true;
+  public boolean mapDirty = true;
 
   public void addEntity(GameObject thing) { things.add(thing); }
   public void removeEntity(GameObject thing) { things.remove(thing); }
@@ -40,4 +44,11 @@ public class GameState {
 
   public List<GameObject> getThings() { return things; }
 
+  public Scheduler getEngine() { return engine; }
+
+  public void doUpkeep(Integer ticks) { player.beastTick(ticks); }
+
+  public Command getAction(Actor actor) {
+    return new WaitCommand();
+  }
 }

@@ -14,7 +14,7 @@ public class Werewolf
 
   public Werewolf() {
     transformed = false;
-    beast = 0f;
+    beast = 30f;
     name = "Werewolf";
     desc = "A wild-looking person";
     glyph = '@';
@@ -24,7 +24,7 @@ public class Werewolf
 
   public float getBeast() { return beast; }
   public void changeBeast(float amt) { beast = MathUtils.clamp(beast + amt, 0f, 100f); }
-  public void beastTick() { changeBeast(beastGain); }
+  public void beastTick(int ticks) { changeBeast(beastGain * ticks); }
   public int getStr() { return (int)beast / 10;}
 
   public boolean isTransformed() { return transformed; }
