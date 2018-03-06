@@ -1,11 +1,11 @@
 package com.rakaneth.wbm.system;
 
 import com.badlogic.gdx.math.MathUtils;
-import squidpony.squidmath.SquidID;
+import squidpony.squidgrid.Direction;
 
 public class Werewolf
     extends GameObject
-    implements Mover, Fighter, Actor {
+    implements Fighter, Actor {
 
   private boolean transformed;
   private float   beast;
