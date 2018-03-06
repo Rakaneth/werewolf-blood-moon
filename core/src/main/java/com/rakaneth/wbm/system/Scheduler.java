@@ -16,7 +16,7 @@ public final class Scheduler {
   public void add(Actor actor) {
     int nextTurn = actor.nextTurn();
     if (schedule.get(nextTurn) == null) {
-      List<Actor> newList = new ArrayList<Actor>();
+      List<Actor> newList = new ArrayList<>();
       newList.add(actor);
       schedule.put(nextTurn, newList);
     } else {
@@ -35,6 +35,7 @@ public final class Scheduler {
     Map.Entry<Integer, List<Actor>> entry = schedule.entryAt(0);
     int ticksToProcess = entry.getKey() - clock;
     clock += ticksToProcess;
+    System.out.println("Current time is " + String.valueOf(clock));
     Actor toAct = entry.getValue().remove(0);
     if (entry.getValue().isEmpty()) schedule.removeAt(0);
     return new Pair<>(toAct, ticksToProcess);
@@ -44,12 +45,11 @@ public final class Scheduler {
     int result = cmd.execute(actor, state);
     actor.changeNextTurn(result);
     add(actor);
-    if (result > 0 && paused) resume();
+    if (result > 0 && paused) paused = false;
   }
 
   public boolean isPaused() { return paused;}
   public void pause() { paused = true; }
-  public void resume() { paused = false; }
 
   public int getClock() { return clock; }
 

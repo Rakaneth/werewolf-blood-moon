@@ -6,7 +6,7 @@ import squidpony.squidmath.Coord;
 import squidpony.squidmath.SquidID;
 
 public abstract class GameObject {
-  Coord pos = Coord.get(0, 0);
+  private Coord pos = Coord.get(0, 0);
   final protected String id = SquidID.randomUUID().toString();
   String name;
   String desc;

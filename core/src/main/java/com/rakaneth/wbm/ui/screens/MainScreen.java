@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.rakaneth.wbm.system.*;
 import com.rakaneth.wbm.system.commands.Command;
 import com.rakaneth.wbm.system.commands.MoveCommand;
+import com.rakaneth.wbm.system.commands.WaitCommand;
 import com.rakaneth.wbm.ui.UiUtils;
 import javafx.util.Pair;
 import squidpony.squidgrid.Direction;
@@ -23,6 +24,7 @@ public class MainScreen extends WolfScreen {
   private SparseLayers mapLayers;
   private SquidMessageBox msgs;
   private SquidPanel beastPanel;
+  private SquidPanel timePanel;
   private GameState gameState;
   private final int mapW = 100;
   private final int mapH = 36;
@@ -30,6 +32,8 @@ public class MainScreen extends WolfScreen {
   private final int msgH = 4;
   private final int beastW = 33;
   private final int beastH = 4;
+  private final int timeW = 33;
+  private final int timeH = 4;
 
   public MainScreen(SpriteBatch batch) {
     super("main");
@@ -39,7 +43,8 @@ public class MainScreen extends WolfScreen {
     stage = new Stage(vport, batch);
     input = new SquidInput((key, alt, ctrl, shift) -> {
       Scheduler engine = gameState.getEngine();
-      Direction direction = Direction.NONE;
+      Werewolf player = gameState.getPlayer();
+      Direction direction;
       switch (key) {
         case SquidInput.RIGHT_ARROW:
           direction = Direction.RIGHT;
@@ -70,10 +75,13 @@ public class MainScreen extends WolfScreen {
           break;
       }
       if (direction != Direction.NONE) {
-        engine.processCmd(gameState.getPlayer(), new MoveCommand(direction), gameState);
+        engine.processCmd(player, new MoveCommand(direction), gameState);
+      } else {
+        engine.processCmd(player, new WaitCommand(), gameState);
       }
+      gameState.hudDirty = true;
     });
-    TextCellFactory slab = UiUtils.tweakTCF(DefaultResources.getSlabFamily(), 1.1f, 1.35f);
+    TextCellFactory slab = UiUtils.tweakTCF(DefaultResources.getSlabFamily(), 1.1f, 1.15f);
     mapLayers = new SparseLayers(mapW, mapH, cellWidth, cellHeight, slab);
     mapLayers.setBounds(0,cellHeight * 4, cellWidth * mapW, cellHeight * mapH);
     msgs = new SquidMessageBox(msgW, msgH, slab.copy());
@@ -81,8 +89,11 @@ public class MainScreen extends WolfScreen {
     msgs.appendWrappingMessage(toICString("[Green][*]Welcome[] to Werewolf: Blood Moon!"));
     beastPanel = new SquidPanel(beastW, beastH, slab.copy());
     beastPanel.setBounds(msgW * cellWidth, 0, beastW * cellWidth, beastH * cellWidth);
+    timePanel = new SquidPanel(timeW, timeH, slab.copy());
+    timePanel.setBounds((msgW + beastW) * cellWidth, 0, timeW * cellWidth, timeH * cellHeight);
     stage.addActor(msgs);
     stage.addActor(beastPanel);
+    stage.addActor(timePanel);
     stage.addActor(mapLayers);
   }
 
@@ -106,6 +117,7 @@ public class MainScreen extends WolfScreen {
   }
 
   private void drawGameState() {
+    mapLayers.clear();
     Werewolf player = gameState.getPlayer();
     int left = MathUtils.clamp(player.getPos().x - mapW/2, 0, Math.max(0, 250-mapW));
     int top = MathUtils.clamp(player.getPos().y - mapH/2, 0, Math.max(0, 250-mapH));
@@ -168,17 +180,19 @@ public class MainScreen extends WolfScreen {
     beastPanel.putBordersCaptioned(SColor.WHITE, toICString("Beast"));
     beastPanel.put(1, 1, "Man");
     beastPanel.put(28, 1, "Wolf");
-    UiUtils.drawBar(beastPanel, 2, 2, 30, player.getBeast(), 100f, SColor.GOLD, SColor.CRIMSON);
+    UiUtils.drawBar(beastPanel, 1, 2, 31, player.getBeast(), 100f, SColor.CRIMSON, SColor.GOLD);
   }
 
   private void drawClock() {
-
+    timePanel.erase();
+    int time = gameState.getEngine().getClock();
+    timePanel.put(1, 1, toICString("Current time: [Light Blue]" + String.valueOf(time) + "[]"));
   }
 
   private void drawHUD() {
     drawMsgs();
     drawBeast();
-    //drawClock();
+    drawClock();
   }
 
   @Override
@@ -193,20 +207,31 @@ public class MainScreen extends WolfScreen {
   @Override
   public void render () {
     Scheduler engine = gameState.getEngine();
+    if (gameState.mapDirty) {
+      drawGameState();
+      gameState.mapDirty = false;
+    }
+    if (gameState.hudDirty) {
+      drawHUD();
+      gameState.hudDirty = false;
+    }
     if (engine.isPaused()) {
-      if (input.hasNext()) input.next();
+      if (input.hasNext()) {
+        input.next();
+      }
     } else {
       Pair<Actor, Integer> upNext = engine.getNext();
-      if (upNext.getKey() == gameState.getPlayer()) {
+      Actor toAct = upNext.getKey();
+      gameState.doUpkeep(upNext.getValue());
+      if (toAct == gameState.getPlayer()) {
         engine.pause();
       } else {
-        gameState.doUpkeep(upNext.getValue());
-        Command cmd = gameState.getAction(upNext.getKey());
-        engine.processCmd(upNext.getKey(), cmd, gameState);
+        Command cmd = gameState.getAction(toAct);
+        engine.processCmd(toAct, cmd, gameState);
+        gameState.hudDirty = true;
       }
     }
-    if (gameState.mapDirty) drawGameState();
-    if (gameState.hudDirty) drawHUD();
+
     stage.act();
     stage.draw();
   }
