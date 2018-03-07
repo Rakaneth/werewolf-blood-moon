@@ -21,8 +21,8 @@ public final class UiUtils {
 
   public static void drawBar(SquidPanel panel, int x, int y, int length, float curNum, float maxNum, SColor fillColor,
                              SColor
-      emptyColor) {
-    int toFill = (int)(curNum * length / maxNum);
+                                 emptyColor) {
+    int toFill = (int) (curNum * length / maxNum);
     for (int i = x; i < x + length; i++) {
       panel.put(i, y, emptyColor);
     }

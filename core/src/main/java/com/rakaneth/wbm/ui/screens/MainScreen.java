@@ -11,7 +11,6 @@ import com.rakaneth.wbm.system.commands.MoveCommand;
 import com.rakaneth.wbm.system.commands.TransformCommand;
 import com.rakaneth.wbm.system.commands.WaitCommand;
 import com.rakaneth.wbm.ui.UiUtils;
-import javafx.util.Pair;
 import squidpony.squidgrid.Direction;
 import squidpony.squidgrid.gui.gdx.*;
 import squidpony.squidgrid.mapping.SectionDungeonGenerator;
@@ -111,7 +110,7 @@ public class MainScreen extends WolfScreen {
     char[][] finalMap = sdg.generate(baseMap, smg.getEnvironment());
     gameState.setMap(finalMap);
     gameState.addPlayer(gameState.randomFloor());
-    for (int i=0; i<30; i++) {
+    for (int i = 0; i < 30; i++) {
       String[] choices = new String[]{"deer", "rabbit", "bear"};
       String choice = WolfRNG.getRNG().getRandomElement(choices);
       Creature newCritter = Creature.makeAnimal(choice);

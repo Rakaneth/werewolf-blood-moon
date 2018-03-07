@@ -2,11 +2,8 @@ package com.rakaneth.wbm.ui.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
-import squidpony.panel.IColoredString;
-import squidpony.squidgrid.gui.gdx.GDXMarkup;
 import squidpony.squidgrid.gui.gdx.SquidInput;
 
 public abstract class WolfScreen {

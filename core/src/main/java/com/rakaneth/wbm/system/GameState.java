@@ -18,9 +18,9 @@ public class GameState {
   private List<GameObject> things = new ArrayList<>();
   private char[][] gameMap;
   private Werewolf player;
-  private DungeonUtility utility = new DungeonUtility();
-  public boolean hudDirty = true;
-  public boolean mapDirty = true;
+  private DungeonUtility utility  = new DungeonUtility();
+  public  boolean        hudDirty = true;
+  public  boolean        mapDirty = true;
   private boolean paused;
   private int clock = 0;
   private SquidMessageBox msgs;
@@ -29,15 +29,20 @@ public class GameState {
     this.msgs = msgs;
   }
 
-  public void addEntity(GameObject thing) { things.add(thing); }
-  public void removeEntity(GameObject thing) { things.remove(thing); }
+  public void addEntity(GameObject thing) {
+    things.add(thing);
+  }
+
+  public void removeEntity(GameObject thing) {
+    things.remove(thing);
+  }
 
   public void addActor(Actor actor) {
-    addEntity((GameObject)actor);
+    addEntity((GameObject) actor);
   }
 
   public void removeActor(Actor actor) {
-    removeEntity((GameObject)actor);
+    removeEntity((GameObject) actor);
   }
 
   public void addPlayer(Coord pos) {
@@ -45,17 +50,30 @@ public class GameState {
     addActor(player);
   }
 
-  public Werewolf getPlayer() { return player; }
+  public Werewolf getPlayer() {
+    return player;
+  }
 
-  public char[][] getMap() { return gameMap; }
-  public void setMap(char[][] newMap) { gameMap = newMap; }
+  public char[][] getMap() {
+    return gameMap;
+  }
 
-  public Coord randomFloor() { return utility.randomFloor(gameMap); }
+  public void setMap(char[][] newMap) {
+    gameMap = newMap;
+  }
 
-  public List<GameObject> getThings() { return things; }
+  public Coord randomFloor() {
+    return utility.randomFloor(gameMap);
+  }
+
+  public List<GameObject> getThings() {
+    return things;
+  }
 
 
-  public void doUpkeep(Integer ticks) { player.beastTick(ticks); }
+  public void doUpkeep(Integer ticks) {
+    player.beastTick(ticks);
+  }
 
   public Command getAction(Actor actor) {
     return new WaitCommand();
@@ -70,10 +88,10 @@ public class GameState {
 
   public void update() {
     List<Actor> toAct = things.stream()
-        .filter(Actor.class::isInstance)
-        .map(f -> (Actor)f)
-        .sorted(Comparator.comparing(Actor::getSpeed).reversed())
-        .collect(Collectors.toList());
+                              .filter(Actor.class::isInstance)
+                              .map(f -> (Actor) f)
+                              .sorted(Comparator.comparing(Actor::getSpeed).reversed())
+                              .collect(Collectors.toList());
 
     if (!paused) {
       for (Actor actor : toAct) {
@@ -98,10 +116,22 @@ public class GameState {
     }
   }
 
-  public int getClock() { return clock; }
-  public boolean isPaused() { return paused; }
-  public void addMessage(IColoredString<Color> msg) { msgs.appendWrappingMessage(msg); }
-  public void addMessage(String msg) { msgs.appendWrappingMessage(msg);}
+  public int getClock() {
+    return clock;
+  }
+
+  public boolean isPaused() {
+    return paused;
+  }
+
+  public void addMessage(IColoredString<Color> msg) {
+    msgs.appendWrappingMessage(msg);
+  }
+
+  public void addMessage(String msg) {
+    msgs.appendWrappingMessage(msg);
+  }
+
   public void addMessageF(String template, Object... args) {
     IColoredString<Color> toWrite = UiUtils.toICString(String.format(template, args));
     addMessage(toWrite);
