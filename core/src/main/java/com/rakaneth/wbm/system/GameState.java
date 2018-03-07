@@ -86,13 +86,15 @@ public class GameState {
           } else {
             processCmd(actor, getAction(actor));
           }
+        } else {
+          int spd = actor.getSpeed();
+          int newNRG = spd + actor.getEnergy();
+          System.out.printf("%s gains %d energy; has %d\n", actor, spd, newNRG);
+          actor.setEnergy(newNRG + spd);
         }
-        int spd = actor.getSpeed();
-        int newNRG = spd + actor.getEnergy();
-        System.out.printf("%s gains %d energy; has %d\n", actor, spd, newNRG);
-        actor.setEnergy(newNRG + spd);
       }
       clock++;
+      doUpkeep(1);
     }
   }
 

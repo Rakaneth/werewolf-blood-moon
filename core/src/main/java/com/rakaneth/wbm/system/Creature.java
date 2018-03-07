@@ -1,29 +1,40 @@
 package com.rakaneth.wbm.system;
 
 import com.badlogic.gdx.Gdx;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
 import squidpony.squidmath.Coord;
+import squidpony.squidmath.OrderedMap;
 
 import java.io.IOException;
+import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public class Creature
     extends GameObject
   implements Actor, Fighter {
   int energy;
   int speed;
   int str;
+  static Map<String, Creature> bluePrints;
 
-  public static Creature makeAnimal(String animalID) {
-    YAMLFactory factory = new YAMLFactory();
+
+  static {
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     try {
-      YAMLParser parser = factory.createParser(Gdx.files.internal("data/animals.yml").reader());
+      bluePrints = mapper.readValue(Gdx.files.internal("data/animals.yml").reader(),
+                                    new TypeReference<Map<String, Creature>>(){});
     } catch (IOException e) {
       e.printStackTrace();
     }
-    Creature foetus = new Creature();
-    //TODO: finish importing animals from YAML
-    return foetus;
+  }
+
+  public static Creature makeAnimal(String animalID) {
+    Creature bluePrint = bluePrints.get(animalID);
+    return new Creature(bluePrint);
   }
 
   public Creature() {}
@@ -36,6 +47,16 @@ public class Creature
     this.pos = pos;
     this.str = str;
     this.speed = speed;
+  }
+
+  public Creature(Creature c) {
+    glyph = c.glyph;
+    color = c.color;
+    name = c.name;
+    desc = c.desc;
+    pos = c.pos;
+    str = c.str;
+    speed = c.speed;
   }
 
   public int getEnergy() { return energy;}

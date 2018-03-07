@@ -111,6 +111,13 @@ public class MainScreen extends WolfScreen {
     char[][] finalMap = sdg.generate(baseMap, smg.getEnvironment());
     gameState.setMap(finalMap);
     gameState.addPlayer(gameState.randomFloor());
+    for (int i=0; i<30; i++) {
+      String[] choices = new String[]{"deer", "rabbit", "bear"};
+      String choice = WolfRNG.getRNG().getRandomElement(choices);
+      Creature newCritter = Creature.makeAnimal(choice);
+      newCritter.setPos(gameState.randomFloor());
+      gameState.addEntity(newCritter);
+    }
   }
 
   private boolean isOOB(int x, int y) {
