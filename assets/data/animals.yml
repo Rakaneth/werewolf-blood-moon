@@ -1,0 +1,18 @@
+rabbit:
+  name: rabbit
+  glyph: 'r'
+  color: White
+  str: 0
+  speed: 7
+deer:
+  name: deer
+  glyph: 'd'
+  color: CW Light Brown
+  str: 2
+  speed: 5
+bear:
+  name: bear
+  glyph: 'b'
+  color: Sepia
+  str: 5
+  speed: 3

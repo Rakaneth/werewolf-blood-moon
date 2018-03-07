@@ -2,30 +2,35 @@ package com.rakaneth.wbm.system;
 
 import com.badlogic.gdx.math.MathUtils;
 import squidpony.squidgrid.Direction;
+import squidpony.squidmath.Coord;
 
 public class Werewolf
-    extends GameObject
-    implements Fighter, Actor {
+    extends Creature {
 
   private boolean transformed;
   private float   beast;
   private float beastGain;
-  private int turn;
 
-  public Werewolf() {
+
+  Werewolf(Coord pos) {
+    super('@', "White", "Werewolf", "A wild-looking person", pos, 3, 5);
     transformed = false;
     beast = 30f;
-    name = "Werewolf";
-    desc = "A wild-looking person";
-    glyph = '@';
-    color = "White";
-    beastGain = 0.1f;
   }
 
   public float getBeast() { return beast; }
   public void changeBeast(float amt) { beast = MathUtils.clamp(beast + amt, 0f, 100f); }
   public void beastTick(int ticks) { changeBeast(beastGain * ticks); }
-  public int getStr() { return (int)beast / 10;}
+
+  private int beastBonus() { return (int)beast / 10; }
+
+  @Override
+  public int getStr() {
+    return transformed ? str + beastBonus() : str;
+  }
+
+  @Override
+  public int getSpeed() { return Math.max(beastBonus(), speed);}
 
   public boolean isTransformed() { return transformed; }
   public void shiftUp() {
@@ -38,8 +43,13 @@ public class Werewolf
     color = "White";
     beastGain -= 0.5f;
   }
+  public void toggleTransform() {
+    if (transformed)
+      shiftDown();
+    else
+      shiftUp();
+  }
 
-  public int nextTurn() { return turn; }
-  public void changeNextTurn(int amt) { turn += amt; }
+
 
 }

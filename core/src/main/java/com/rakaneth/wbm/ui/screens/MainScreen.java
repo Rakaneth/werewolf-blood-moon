@@ -8,32 +8,31 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.rakaneth.wbm.system.*;
 import com.rakaneth.wbm.system.commands.Command;
 import com.rakaneth.wbm.system.commands.MoveCommand;
+import com.rakaneth.wbm.system.commands.TransformCommand;
 import com.rakaneth.wbm.system.commands.WaitCommand;
 import com.rakaneth.wbm.ui.UiUtils;
 import javafx.util.Pair;
 import squidpony.squidgrid.Direction;
 import squidpony.squidgrid.gui.gdx.*;
-import squidpony.squidgrid.mapping.DungeonUtility;
 import squidpony.squidgrid.mapping.SectionDungeonGenerator;
 import squidpony.squidgrid.mapping.SerpentMapGenerator;
 import squidpony.squidmath.Coord;
-import squidpony.squidmath.GreasedRegion;
 
 
 public class MainScreen extends WolfScreen {
-  private SparseLayers mapLayers;
+  private SparseLayers    mapLayers;
   private SquidMessageBox msgs;
-  private SquidPanel beastPanel;
-  private SquidPanel timePanel;
-  private GameState gameState;
-  private final int mapW = 100;
-  private final int mapH = 36;
-  private final int msgW = 34;
-  private final int msgH = 4;
+  private SquidPanel      beastPanel;
+  private SquidPanel      timePanel;
+  private GameState       gameState;
+  private final int mapW   = 100;
+  private final int mapH   = 36;
+  private final int msgW   = 34;
+  private final int msgH   = 4;
   private final int beastW = 33;
   private final int beastH = 4;
-  private final int timeW = 33;
-  private final int timeH = 4;
+  private final int timeW  = 33;
+  private final int timeH  = 4;
 
   public MainScreen(SpriteBatch batch) {
     super("main");
@@ -42,9 +41,9 @@ public class MainScreen extends WolfScreen {
     vport = new StretchViewport(100 * UiUtils.cellWidth, 40 * UiUtils.cellHeight);
     stage = new Stage(vport, batch);
     input = new SquidInput((key, alt, ctrl, shift) -> {
-      Scheduler engine = gameState.getEngine();
       Werewolf player = gameState.getPlayer();
       Direction direction;
+      Command cmd = new WaitCommand();
       switch (key) {
         case SquidInput.RIGHT_ARROW:
           direction = Direction.RIGHT;
@@ -70,23 +69,26 @@ public class MainScreen extends WolfScreen {
         case SquidInput.UP_RIGHT_ARROW:
           direction = Direction.UP_RIGHT;
           break;
+        case 'T':
+          direction = Direction.NONE;
+          cmd = new TransformCommand();
         default:
           direction = Direction.NONE;
           break;
       }
-      if (direction != Direction.NONE) {
-        engine.processCmd(player, new MoveCommand(direction), gameState);
+      if (direction == Direction.NONE) {
+        gameState.processCmd(player, cmd);
       } else {
-        engine.processCmd(player, new WaitCommand(), gameState);
+        gameState.processCmd(player, new MoveCommand(direction));
+        //gameState.processCmd(player, new WaitCommand(), gameState);
       }
-      gameState.hudDirty = true;
+      //gameState.hudDirty = true;
     });
     TextCellFactory slab = UiUtils.tweakTCF(DefaultResources.getSlabFamily(), 1.1f, 1.15f);
     mapLayers = new SparseLayers(mapW, mapH, cellWidth, cellHeight, slab);
-    mapLayers.setBounds(0,cellHeight * 4, cellWidth * mapW, cellHeight * mapH);
+    mapLayers.setBounds(0, cellHeight * 4, cellWidth * mapW, cellHeight * mapH);
     msgs = new SquidMessageBox(msgW, msgH, slab.copy());
     msgs.setBounds(0, 0, msgW * cellWidth, msgH * cellHeight);
-    msgs.appendWrappingMessage(toICString("[Green][*]Welcome[] to Werewolf: Blood Moon!"));
     beastPanel = new SquidPanel(beastW, beastH, slab.copy());
     beastPanel.setBounds(msgW * cellWidth, 0, beastW * cellWidth, beastH * cellWidth);
     timePanel = new SquidPanel(timeW, timeH, slab.copy());
@@ -98,8 +100,7 @@ public class MainScreen extends WolfScreen {
   }
 
   private void newGame() {
-    gameState = new GameState();
-    gameState.addPlayer();
+    gameState = new GameState(msgs);
     SerpentMapGenerator smg = new SerpentMapGenerator(250, 250, WolfRNG.getRNG(), 0.2);
     SectionDungeonGenerator sdg = new SectionDungeonGenerator(250, 250, WolfRNG.getRNG());
     smg.putCaveCarvers(10);
@@ -109,7 +110,7 @@ public class MainScreen extends WolfScreen {
     sdg.addGrass(SectionDungeonGenerator.CAVE, 25);
     char[][] finalMap = sdg.generate(baseMap, smg.getEnvironment());
     gameState.setMap(finalMap);
-    gameState.getPlayer().setPos(gameState.randomFloor());
+    gameState.addPlayer(gameState.randomFloor());
   }
 
   private boolean isOOB(int x, int y) {
@@ -119,47 +120,47 @@ public class MainScreen extends WolfScreen {
   private void drawGameState() {
     mapLayers.clear();
     Werewolf player = gameState.getPlayer();
-    int left = MathUtils.clamp(player.getPos().x - mapW/2, 0, Math.max(0, 250-mapW));
-    int top = MathUtils.clamp(player.getPos().y - mapH/2, 0, Math.max(0, 250-mapH));
+    int left = MathUtils.clamp(player.getPos().x - mapW / 2, 0, Math.max(0, 250 - mapW));
+    int top = MathUtils.clamp(player.getPos().y - mapH / 2, 0, Math.max(0, 250 - mapH));
 
     for (int x = left; x < left + mapW; x++) {
       for (int y = top; y < top + mapH; y++) {
-         if (!isOOB(x, y)) {
-           char tile = gameState.getMap()[x][y];
-           char toDisplay;
-           String toColor;
-           switch (tile) {
-             case '#':
-               toDisplay = '\u2663';
-               toColor = "Green";
-               break;
-             case ',':
-               toDisplay = '~';
-               toColor = "CW Light Blue";
-               break;
-             case '~':
-               toDisplay = '~';
-               toColor = "Blue";
-               break;
-             case ':':
-               toDisplay = ':';
-               toColor = "Silver Grey";
-               break;
-             case '"':
-               toDisplay = '"';
-               toColor = "Green";
-               break;
-             default:
-               toDisplay = '.';
-               toColor = "CW Light Brown";
-               break;
-           }
-           mapLayers.put(x-left, y-top, toDisplay, (SColor) Colors.get(toColor));
-         }
+        if (!isOOB(x, y)) {
+          char tile = gameState.getMap()[x][y];
+          char toDisplay;
+          String toColor;
+          switch (tile) {
+            case '#':
+              toDisplay = '\u2663';
+              toColor = "Green";
+              break;
+            case ',':
+              toDisplay = '~';
+              toColor = "CW Light Blue";
+              break;
+            case '~':
+              toDisplay = '~';
+              toColor = "Blue";
+              break;
+            case ':':
+              toDisplay = ':';
+              toColor = "Silver Grey";
+              break;
+            case '"':
+              toDisplay = '"';
+              toColor = "Green";
+              break;
+            default:
+              toDisplay = '.';
+              toColor = "CW Light Brown";
+              break;
+          }
+          mapLayers.put(x - left, y - top, toDisplay, Colors.get(toColor));
+        }
       }
     }
 
-    for (GameObject thing: gameState.getThings()) {
+    for (GameObject thing : gameState.getThings()) {
       Coord pos = thing.getPos();
       int toX = pos.x - left;
       int toY = pos.y - top;
@@ -171,22 +172,25 @@ public class MainScreen extends WolfScreen {
 
   private void drawMsgs() {
     msgs.erase();
-    msgs.putBordersCaptioned(SColor.WHITE, toICString("Messages"));
+    msgs.putBordersCaptioned(SColor.WHITE, UiUtils.toICString("Messages"));
   }
 
   private void drawBeast() {
     Werewolf player = gameState.getPlayer();
     beastPanel.erase();
-    beastPanel.putBordersCaptioned(SColor.WHITE, toICString("Beast"));
+    beastPanel.putBordersCaptioned(SColor.WHITE, UiUtils.toICString("Beast"));
     beastPanel.put(1, 1, "Man");
     beastPanel.put(28, 1, "Wolf");
-    UiUtils.drawBar(beastPanel, 1, 2, 31, player.getBeast(), 100f, SColor.CRIMSON, SColor.GOLD);
+    UiUtils.drawBar(beastPanel, 1, 2, 31, player.getBeast(), 100f, SColor.CRIMSON,
+                    SColor.DARK_BLUE_DYE);
   }
 
   private void drawClock() {
     timePanel.erase();
-    int time = gameState.getEngine().getClock();
-    timePanel.put(1, 1, toICString("Current time: [Light Blue]" + String.valueOf(time) + "[]"));
+    int time = gameState.getClock();
+    timePanel.put(1, 1, UiUtils.toICString("Current time: [Light Blue]" + String.valueOf(time) + "[]"));
+    timePanel.put(1, 2,
+                  UiUtils.toICString("Current position: [Light Blue]" + gameState.getPlayer().getPos()));
   }
 
   private void drawHUD() {
@@ -205,8 +209,7 @@ public class MainScreen extends WolfScreen {
   }
 
   @Override
-  public void render () {
-    Scheduler engine = gameState.getEngine();
+  public void render() {
     if (gameState.mapDirty) {
       drawGameState();
       gameState.mapDirty = false;
@@ -215,22 +218,12 @@ public class MainScreen extends WolfScreen {
       drawHUD();
       gameState.hudDirty = false;
     }
-    if (engine.isPaused()) {
+    if (gameState.isPaused()) {
       if (input.hasNext()) {
         input.next();
       }
-    } else {
-      Pair<Actor, Integer> upNext = engine.getNext();
-      Actor toAct = upNext.getKey();
-      gameState.doUpkeep(upNext.getValue());
-      if (toAct == gameState.getPlayer()) {
-        engine.pause();
-      } else {
-        Command cmd = gameState.getAction(toAct);
-        engine.processCmd(toAct, cmd, gameState);
-        gameState.hudDirty = true;
-      }
     }
+    gameState.update();
 
     stage.act();
     stage.draw();

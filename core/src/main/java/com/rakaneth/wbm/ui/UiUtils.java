@@ -1,5 +1,8 @@
 package com.rakaneth.wbm.ui;
 
+import com.badlogic.gdx.graphics.Color;
+import squidpony.panel.IColoredString;
+import squidpony.squidgrid.gui.gdx.GDXMarkup;
 import squidpony.squidgrid.gui.gdx.SColor;
 import squidpony.squidgrid.gui.gdx.SquidPanel;
 import squidpony.squidgrid.gui.gdx.TextCellFactory;
@@ -26,5 +29,9 @@ public final class UiUtils {
     for (int j = x; j < x + toFill; j++) {
       panel.put(j, y, fillColor);
     }
+  }
+
+  public static IColoredString<Color> toICString(String markup) {
+    return GDXMarkup.instance.colorString(markup);
   }
 }

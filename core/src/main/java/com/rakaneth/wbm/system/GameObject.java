@@ -6,12 +6,12 @@ import squidpony.squidmath.Coord;
 import squidpony.squidmath.SquidID;
 
 public abstract class GameObject {
-  private Coord pos = Coord.get(0, 0);
+  protected Coord pos = Coord.get(0, 0);
   final protected String id = SquidID.randomUUID().toString();
-  String name;
-  String desc;
-  char glyph;
-  String color;
+  protected String name;
+  protected String desc;
+  protected char glyph;
+  protected String color;
 
   public String getName() { return name; }
   public void setName(String name) { this.name = name; }
@@ -28,4 +28,9 @@ public abstract class GameObject {
 
   public Coord getPos() { return pos; }
   public void setPos(Coord c) { pos = c; }
+
+  @Override
+  public String toString() {
+    return name + "-" + id.substring(0, 7);
+  }
 }

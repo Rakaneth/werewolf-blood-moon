@@ -15,10 +15,9 @@ public class MoveCommand implements Command {
   public int execute(Actor actor, GameState state) {
     boolean result = actor.tryMove(direction, state.getMap());
     if (result) state.mapDirty = true;
-    if (actor instanceof Werewolf) {
-      return result ? Math.max(1, 7 - ((Werewolf)actor).getStr()) : 0;
-    } else {
-      return result ? 5 : 0;
-    }
+    if (actor == state.getPlayer()) state.hudDirty = true;
+    return result ? 10 : 0;
   }
+
+  public String toString() { return "moving"; }
 }

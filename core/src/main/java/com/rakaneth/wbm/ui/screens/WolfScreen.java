@@ -41,8 +41,4 @@ public abstract class WolfScreen {
   void activateInput() {
     Gdx.input.setInputProcessor(new InputMultiplexer(stage, input));
   }
-
-  protected IColoredString<Color> toICString(String markup) {
-    return GDXMarkup.instance.colorString(markup);
-  }
 }

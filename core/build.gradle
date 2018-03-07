@@ -7,5 +7,7 @@ dependencies {
   compile "com.github.SquidPony.SquidLib:squidlib:$squidLibVersion"
   compile "com.github.SquidPony.SquidLib:squidlib-util:$squidLibUtilVersion"
   compile "com.github.tommyettinger:regexodus:$regExodusVersion"
+  compile "com.fasterxml.jackson.core:jackson-core:$jkVersion"
+  compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jkVersion"
 }
         
