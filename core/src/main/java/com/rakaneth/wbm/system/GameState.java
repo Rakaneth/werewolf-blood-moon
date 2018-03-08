@@ -14,6 +14,7 @@ import squidpony.squidgrid.mapping.DungeonUtility;
 import squidpony.squidgrid.mapping.SectionDungeonGenerator;
 import squidpony.squidgrid.mapping.SerpentMapGenerator;
 import squidpony.squidmath.Coord;
+import squidpony.squidmath.GreasedRegion;
 import squidpony.squidmath.StatefulRNG;
 
 import java.util.ArrayList;
@@ -37,7 +38,8 @@ public class GameState {
   private static final String            actTemplate = "%s acts with %d energy.";
   private static final String            geTemplate  = "%s gains %d energy; has %d";
   private static final ApplicationLogger logger      = Gdx.app.getApplicationLogger();
-  private final        StatefulRNG       rng         = new StatefulRNG(0xDEADBEEF);
+  private static final StatefulRNG       rng         = new StatefulRNG(0xDEADBEEF);
+  private GreasedRegion tempRegion;
 
   public GameState(SquidMessageBox msgs) {
     this.msgs = msgs;
@@ -80,12 +82,11 @@ public class GameState {
     sdg.addGrass(SectionDungeonGenerator.CAVE, 25);
     gameMap = sdg.generate(baseMap, smg.getEnvironment());
     resistances = DungeonUtility.generateResistances(gameMap);
+    tempRegion = new GreasedRegion(gameMap, '.');
   }
 
 
-  public Coord randomFloor() {
-    return utility.randomFloor(gameMap);
-  }
+  public Coord randomFloor() { return tempRegion.singleRandom(rng); }
 
   public List<GameObject> getThings() {
     return things;
