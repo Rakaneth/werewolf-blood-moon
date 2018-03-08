@@ -28,6 +28,7 @@ public class Creature
     this.speed = speed;
     this.vision = vision;
     hasScent = true;
+    layer = 2;
   }
 
   public Creature(Creature c) {
@@ -78,7 +79,7 @@ public class Creature
     return canSee(c.x, c.y);
   }
 
-  public boolean canSee(Creature other) {
+  public boolean canSee(GameObject other) {
     return canSee(other.pos);
   }
 

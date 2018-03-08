@@ -15,6 +15,7 @@ public class Werewolf
     super('@', "White", "Werewolf", "A wild-looking person", pos, 3, 5, 6.0);
     transformed = false;
     beast = 30f;
+    layer = 3;
   }
 
   public float getBeast() {

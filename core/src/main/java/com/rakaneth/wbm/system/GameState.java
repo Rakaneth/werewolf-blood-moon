@@ -14,6 +14,7 @@ import squidpony.squidgrid.mapping.DungeonUtility;
 import squidpony.squidgrid.mapping.SectionDungeonGenerator;
 import squidpony.squidgrid.mapping.SerpentMapGenerator;
 import squidpony.squidmath.Coord;
+import squidpony.squidmath.StatefulRNG;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -36,6 +37,7 @@ public class GameState {
   private static final String            actTemplate = "%s acts with %d energy.";
   private static final String            geTemplate  = "%s gains %d energy; has %d";
   private static final ApplicationLogger logger      = Gdx.app.getApplicationLogger();
+  private final        StatefulRNG       rng         = new StatefulRNG(0xDEADBEEF);
 
   public GameState(SquidMessageBox msgs) {
     this.msgs = msgs;
@@ -69,8 +71,8 @@ public class GameState {
   }
 
   public void newMap() {
-    SerpentMapGenerator smg = new SerpentMapGenerator(250, 250, WolfRNG.getRNG(), 0.2);
-    SectionDungeonGenerator sdg = new SectionDungeonGenerator(250, 250, WolfRNG.getRNG());
+    SerpentMapGenerator smg = new SerpentMapGenerator(250, 250, rng, 0.2);
+    SectionDungeonGenerator sdg = new SectionDungeonGenerator(250, 250, rng);
     smg.putCaveCarvers(10);
     char[][] baseMap = smg.generate();
     sdg.addBoulders(SectionDungeonGenerator.CAVE, 15);
@@ -175,5 +177,9 @@ public class GameState {
                       .filter(f -> f instanceof Creature)
                       .map(m -> (Creature) m)
                       .findAny();
+  }
+
+  public StatefulRNG getRNG() {
+    return rng;
   }
 }

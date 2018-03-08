@@ -13,6 +13,7 @@ public abstract class GameObject {
   protected char    glyph;
   protected String  color;
   protected boolean hasScent;
+  int layer = 1;
 
   public String getName() {
     return name;
@@ -61,5 +62,9 @@ public abstract class GameObject {
   @Override
   public String toString() {
     return String.format("%s-%s", name, id.substring(0, 7));
+  }
+
+  public int getLayer() {
+    return layer;
   }
 }

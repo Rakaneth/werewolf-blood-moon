@@ -15,6 +15,8 @@ import squidpony.squidgrid.Direction;
 import squidpony.squidgrid.gui.gdx.*;
 import squidpony.squidmath.Coord;
 
+import java.util.Comparator;
+
 
 public class MainScreen extends WolfScreen {
   private SparseLayers    mapLayers;
@@ -102,9 +104,11 @@ public class MainScreen extends WolfScreen {
     gameState.addPlayer(gameState.randomFloor());
     for (int i = 0; i < 30; i++) {
       String[] choices = new String[]{"deer", "rabbit", "bear"};
-      String choice = WolfRNG.getRNG().getRandomElement(choices);
+      String choice = gameState.getRNG().getRandomElement(choices);
       Creature newCritter = CreatureBuilder.makeAnimal(choice);
-      newCritter.setPos(gameState.randomFloor());
+      do {
+        newCritter.setPos(gameState.randomFloor());
+      } while (gameState.creatureAt(newCritter.getPos()).isPresent());
       gameState.addCreature(newCritter);
     }
   }
@@ -156,11 +160,14 @@ public class MainScreen extends WolfScreen {
       }
     }
 
+    gameState.getThings().sort(Comparator.comparing(GameObject::getLayer));
+
     for (GameObject thing : gameState.getThings()) {
       Coord pos = thing.getPos();
       int toX = pos.x - left;
       int toY = pos.y - top;
-      if (toX >= 0 && toX < mapW && toY >= 0 && toY < mapH && player.canSmell(thing)) {
+      boolean canPerceive = player.canSmell(thing) || player.canSee(thing);
+      if (toX >= 0 && toX < mapW && toY >= 0 && toY < mapH && canPerceive) {
         mapLayers.put(toX, toY, thing.getGlyph(), thing.getColor());
       }
     }
