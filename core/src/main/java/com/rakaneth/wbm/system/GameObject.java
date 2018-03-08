@@ -59,6 +59,6 @@ public abstract class GameObject {
 
   @Override
   public String toString() {
-    return name + "-" + id.substring(0, 7);
+    return String.format("%s-%s", name, id.substring(0, 7));
   }
 }

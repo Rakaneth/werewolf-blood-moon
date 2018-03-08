@@ -1,5 +1,7 @@
 package com.rakaneth.wbm.system;
 
+import com.badlogic.gdx.ApplicationLogger;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.rakaneth.wbm.system.commands.Command;
 import com.rakaneth.wbm.system.commands.WaitCommand;
@@ -15,15 +17,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class GameState {
-  private List<GameObject> things = new ArrayList<>();
-  private char[][] gameMap;
-  private Werewolf player;
-  private DungeonUtility utility  = new DungeonUtility();
-  public  boolean        hudDirty = true;
-  public  boolean        mapDirty = true;
-  private boolean paused;
-  private int clock = 0;
+  private char[][]        gameMap;
+  private Werewolf        player;
+  private boolean         paused;
   private SquidMessageBox msgs;
+  private              DungeonUtility    utility     = new DungeonUtility();
+  public               boolean           hudDirty    = true;
+  public               boolean           mapDirty    = true;
+  private              List<GameObject>  things      = new ArrayList<>();
+  private              int               clock       = 0;
+  private static final String            seTemplate  = "%s spends %d energy %s; has %d";
+  private static final String            actTemplate = "%s acts with %d energy.";
+  private static final String            geTemplate  = "%s gains %d energy; has %d";
+  private static final ApplicationLogger logger      = Gdx.app.getApplicationLogger();
+
 
   public GameState(SquidMessageBox msgs) {
     this.msgs = msgs;
@@ -82,7 +89,7 @@ public class GameState {
   public void processCmd(Actor actor, Command cmd) {
     int energySpent = cmd.execute(actor, this);
     actor.setEnergy(actor.getEnergy() - energySpent);
-    System.out.printf("%s spends %d energy %s; has %d\n", actor, energySpent, cmd, actor.getEnergy());
+    log(seTemplate, actor, energySpent, cmd, actor.getEnergy());
     if (energySpent > 0 && paused) paused = false;
   }
 
@@ -90,14 +97,14 @@ public class GameState {
     List<Actor> toAct = things.stream()
                               .filter(Actor.class::isInstance)
                               .map(f -> (Actor) f)
-                              .sorted(Comparator.comparing(Actor::getSpeed).reversed())
+                              .sorted(Comparator.comparing(Actor::getEnergy).reversed())
                               .collect(Collectors.toList());
 
     if (!paused) {
       for (Actor actor : toAct) {
         int nrg = actor.getEnergy();
         if (nrg >= 10) {
-          System.out.println(actor.toString() + " acts with " + String.valueOf(nrg) + " energy.");
+          log(actTemplate, actor, nrg);
           if (actor == player) {
             paused = true;
             return;
@@ -107,8 +114,8 @@ public class GameState {
         } else {
           int spd = actor.getSpeed();
           int newNRG = spd + actor.getEnergy();
-          System.out.printf("%s gains %d energy; has %d\n", actor, spd, newNRG);
-          actor.setEnergy(newNRG + spd);
+          log(geTemplate, actor, spd, newNRG);
+          actor.setEnergy(newNRG);
         }
       }
       clock++;
@@ -135,5 +142,9 @@ public class GameState {
   public void addMessageF(String template, Object... args) {
     IColoredString<Color> toWrite = UiUtils.toICString(String.format(template, args));
     addMessage(toWrite);
+  }
+
+  private void log(String template, Object... args) {
+    logger.log("Game State", String.format(template, args));
   }
 }
