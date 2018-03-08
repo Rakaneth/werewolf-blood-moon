@@ -1,6 +1,7 @@
 package com.rakaneth.wbm.system.commands;
 
 import com.rakaneth.wbm.system.Actor;
+import com.rakaneth.wbm.system.Creature;
 import com.rakaneth.wbm.system.GameState;
 import squidpony.squidgrid.Direction;
 
@@ -14,7 +15,10 @@ public class MoveCommand implements Command {
   @Override
   public int execute(Actor actor, GameState state) {
     boolean result = actor.tryMove(direction, state.getMap());
-    if (result) state.mapDirty = true;
+    if (result) {
+      state.mapDirty = true;
+      state.updateFOV((Creature) actor);
+    }
     if (actor == state.getPlayer()) state.hudDirty = true;
     return result ? 10 : 0;
   }

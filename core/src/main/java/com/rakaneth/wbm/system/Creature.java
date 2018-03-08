@@ -1,44 +1,24 @@
 package com.rakaneth.wbm.system;
 
-import com.badlogic.gdx.Gdx;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import squidpony.squidmath.Coord;
 
-import java.io.IOException;
 import java.util.Map;
 
-@SuppressWarnings("unchecked")
+
 public class Creature
     extends GameObject
     implements Actor, Fighter {
-  int energy;
-  int speed;
-  int str;
+  int        energy;
+  int        speed;
+  int        str;
+  double     vision;
+  double[][] visible;
   static Map<String, Creature> bluePrints;
-
-
-  static {
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-    try {
-      bluePrints = mapper.readValue(Gdx.files.internal("data/animals.yml").reader(),
-                                    new TypeReference<Map<String, Creature>>() {
-                                    });
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-
-  public static Creature makeAnimal(String animalID) {
-    Creature bluePrint = bluePrints.get(animalID);
-    return new Creature(bluePrint);
-  }
 
   public Creature() {
   }
 
-  public Creature(char glyph, String color, String name, String desc, Coord pos, int str, int speed) {
+  public Creature(char glyph, String color, String name, String desc, Coord pos, int str, int speed, double vision) {
     this.glyph = glyph;
     this.color = color;
     this.name = name;
@@ -46,6 +26,8 @@ public class Creature
     this.pos = pos;
     this.str = str;
     this.speed = speed;
+    this.vision = vision;
+    hasScent = true;
   }
 
   public Creature(Creature c) {
@@ -56,6 +38,8 @@ public class Creature
     pos = c.pos;
     str = c.str;
     speed = c.speed;
+    vision = c.vision;
+    hasScent = true;
   }
 
   public int getEnergy() {
@@ -73,4 +57,29 @@ public class Creature
   public int getStr() {
     return str;
   }
+
+  public double getVision() {
+    return vision;
+  }
+
+  public double[][] getVisible() {
+    return visible;
+  }
+
+  public void setVisible(double[][] visMap) {
+    visible = visMap;
+  }
+
+  public boolean canSee(int x, int y) {
+    return visible[x][y] > 0.0;
+  }
+
+  public boolean canSee(Coord c) {
+    return canSee(c.x, c.y);
+  }
+
+  public boolean canSee(Creature other) {
+    return canSee(other.pos);
+  }
+
 }

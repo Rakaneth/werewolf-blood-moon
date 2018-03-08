@@ -6,14 +6,19 @@ import com.badlogic.gdx.graphics.Color;
 import com.rakaneth.wbm.system.commands.Command;
 import com.rakaneth.wbm.system.commands.WaitCommand;
 import com.rakaneth.wbm.ui.UiUtils;
+import squidpony.ArrayTools;
 import squidpony.panel.IColoredString;
+import squidpony.squidgrid.FOV;
 import squidpony.squidgrid.gui.gdx.SquidMessageBox;
 import squidpony.squidgrid.mapping.DungeonUtility;
+import squidpony.squidgrid.mapping.SectionDungeonGenerator;
+import squidpony.squidgrid.mapping.SerpentMapGenerator;
 import squidpony.squidmath.Coord;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class GameState {
@@ -21,6 +26,7 @@ public class GameState {
   private Werewolf        player;
   private boolean         paused;
   private SquidMessageBox msgs;
+  private double[][]      resistances;
   private              DungeonUtility    utility     = new DungeonUtility();
   public               boolean           hudDirty    = true;
   public               boolean           mapDirty    = true;
@@ -31,30 +37,27 @@ public class GameState {
   private static final String            geTemplate  = "%s gains %d energy; has %d";
   private static final ApplicationLogger logger      = Gdx.app.getApplicationLogger();
 
-
   public GameState(SquidMessageBox msgs) {
     this.msgs = msgs;
   }
 
-  public void addEntity(GameObject thing) {
+  public void addThing(GameObject thing) {
     things.add(thing);
+  }
+
+  public void addCreature(Creature creature) {
+    creature.visible = ArrayTools.fill(0.0, gameMap.length, gameMap[0].length);
+    addThing(creature);
+    updateFOV(creature);
   }
 
   public void removeEntity(GameObject thing) {
     things.remove(thing);
   }
 
-  public void addActor(Actor actor) {
-    addEntity((GameObject) actor);
-  }
-
-  public void removeActor(Actor actor) {
-    removeEntity((GameObject) actor);
-  }
-
   public void addPlayer(Coord pos) {
     player = new Werewolf(pos);
-    addActor(player);
+    addCreature(player);
   }
 
   public Werewolf getPlayer() {
@@ -65,9 +68,18 @@ public class GameState {
     return gameMap;
   }
 
-  public void setMap(char[][] newMap) {
-    gameMap = newMap;
+  public void newMap() {
+    SerpentMapGenerator smg = new SerpentMapGenerator(250, 250, WolfRNG.getRNG(), 0.2);
+    SectionDungeonGenerator sdg = new SectionDungeonGenerator(250, 250, WolfRNG.getRNG());
+    smg.putCaveCarvers(10);
+    char[][] baseMap = smg.generate();
+    sdg.addBoulders(SectionDungeonGenerator.CAVE, 15);
+    sdg.addLake(5);
+    sdg.addGrass(SectionDungeonGenerator.CAVE, 25);
+    gameMap = sdg.generate(baseMap, smg.getEnvironment());
+    resistances = DungeonUtility.generateResistances(gameMap);
   }
+
 
   public Coord randomFloor() {
     return utility.randomFloor(gameMap);
@@ -146,5 +158,22 @@ public class GameState {
 
   private void log(String template, Object... args) {
     logger.log("Game State", String.format(template, args));
+  }
+
+  public void updateFOV(Creature creature) {
+    FOV.reuseFOV(resistances, creature.visible, creature.pos.x, creature.pos.y, creature.getVision());
+  }
+
+  public List<GameObject> thingsAt(Coord c) {
+    return things.stream()
+                 .filter(f -> f.pos == c)
+                 .collect(Collectors.toList());
+  }
+
+  public Optional<Creature> creatureAt(Coord c) {
+    return thingsAt(c).stream()
+                      .filter(f -> f instanceof Creature)
+                      .map(m -> (Creature) m)
+                      .findAny();
   }
 }

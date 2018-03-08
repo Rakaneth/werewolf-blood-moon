@@ -8,10 +8,11 @@ import squidpony.squidmath.SquidID;
 public abstract class GameObject {
   protected       Coord  pos = Coord.get(0, 0);
   final protected String id  = SquidID.randomUUID().toString();
-  protected String name;
-  protected String desc;
-  protected char   glyph;
-  protected String color;
+  protected String  name;
+  protected String  desc;
+  protected char    glyph;
+  protected String  color;
+  protected boolean hasScent;
 
   public String getName() {
     return name;

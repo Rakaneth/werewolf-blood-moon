@@ -12,7 +12,7 @@ public class Werewolf
 
 
   Werewolf(Coord pos) {
-    super('@', "White", "Werewolf", "A wild-looking person", pos, 3, 5);
+    super('@', "White", "Werewolf", "A wild-looking person", pos, 3, 5, 6.0);
     transformed = false;
     beast = 30f;
   }
@@ -40,7 +40,12 @@ public class Werewolf
 
   @Override
   public int getSpeed() {
-    return Math.max(beastBonus(), speed);
+    return speed + beastBonus();
+  }
+
+  @Override
+  public double getVision() {
+    return vision + beastBonus();
   }
 
   public boolean isTransformed() {
@@ -64,6 +69,10 @@ public class Werewolf
       shiftDown();
     else
       shiftUp();
+  }
+
+  public boolean canSmell(GameObject thing) {
+    return thing.hasScent && pos.distance(thing.pos) <= getVision() * 2;
   }
 
 

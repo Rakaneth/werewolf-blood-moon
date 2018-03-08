@@ -13,8 +13,6 @@ import com.rakaneth.wbm.system.commands.WaitCommand;
 import com.rakaneth.wbm.ui.UiUtils;
 import squidpony.squidgrid.Direction;
 import squidpony.squidgrid.gui.gdx.*;
-import squidpony.squidgrid.mapping.SectionDungeonGenerator;
-import squidpony.squidgrid.mapping.SerpentMapGenerator;
 import squidpony.squidmath.Coord;
 
 
@@ -100,22 +98,14 @@ public class MainScreen extends WolfScreen {
 
   private void newGame() {
     gameState = new GameState(msgs);
-    SerpentMapGenerator smg = new SerpentMapGenerator(250, 250, WolfRNG.getRNG(), 0.2);
-    SectionDungeonGenerator sdg = new SectionDungeonGenerator(250, 250, WolfRNG.getRNG());
-    smg.putCaveCarvers(10);
-    char[][] baseMap = smg.generate();
-    sdg.addBoulders(SectionDungeonGenerator.CAVE, 15);
-    sdg.addLake(5);
-    sdg.addGrass(SectionDungeonGenerator.CAVE, 25);
-    char[][] finalMap = sdg.generate(baseMap, smg.getEnvironment());
-    gameState.setMap(finalMap);
+    gameState.newMap();
     gameState.addPlayer(gameState.randomFloor());
     for (int i = 0; i < 30; i++) {
       String[] choices = new String[]{"deer", "rabbit", "bear"};
       String choice = WolfRNG.getRNG().getRandomElement(choices);
-      Creature newCritter = Creature.makeAnimal(choice);
+      Creature newCritter = CreatureBuilder.makeAnimal(choice);
       newCritter.setPos(gameState.randomFloor());
-      gameState.addEntity(newCritter);
+      gameState.addCreature(newCritter);
     }
   }
 
@@ -131,7 +121,7 @@ public class MainScreen extends WolfScreen {
 
     for (int x = left; x < left + mapW; x++) {
       for (int y = top; y < top + mapH; y++) {
-        if (!isOOB(x, y)) {
+        if (!isOOB(x, y) && player.canSee(x, y)) {
           char tile = gameState.getMap()[x][y];
           char toDisplay;
           String toColor;
@@ -170,7 +160,7 @@ public class MainScreen extends WolfScreen {
       Coord pos = thing.getPos();
       int toX = pos.x - left;
       int toY = pos.y - top;
-      if (toX >= 0 && toX < mapW && toY >= 0 && toY < mapH) {
+      if (toX >= 0 && toX < mapW && toY >= 0 && toY < mapH && player.canSmell(thing)) {
         mapLayers.put(toX, toY, thing.getGlyph(), thing.getColor());
       }
     }
