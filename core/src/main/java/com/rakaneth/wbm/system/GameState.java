@@ -29,6 +29,7 @@ public class GameState {
   private boolean         paused;
   private SquidMessageBox msgs;
   private double[][]      resistances;
+  private boolean debug = true;
   private              DungeonUtility    utility     = new DungeonUtility();
   public               boolean           hudDirty    = true;
   public               boolean           mapDirty    = true;
@@ -160,7 +161,8 @@ public class GameState {
   }
 
   private void log(String template, Object... args) {
-    logger.log("Game State", String.format(template, args));
+    if (debug)
+      logger.log("Game State", String.format(template, args));
   }
 
   public void updateFOV(Creature creature) {
@@ -182,5 +184,15 @@ public class GameState {
 
   public StatefulRNG getRNG() {
     return rng;
+  }
+
+  /*
+  public CollideResult collide(Actor force, Actor wall) {
+
+  }
+  */
+
+  public enum CollideResult {
+    FRIEND, FOE;
   }
 }

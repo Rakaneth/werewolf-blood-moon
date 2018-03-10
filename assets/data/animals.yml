@@ -16,3 +16,4 @@ bear:
   color: Sepia
   str: 5
   speed: 3
+  isPredator: true

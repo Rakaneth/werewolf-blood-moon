@@ -31,17 +31,22 @@ public class Werewolf
   }
 
   private int beastBonus() {
-    return (int) beast / 10;
+    return transformed ? (int) beast / 10 : 0;
   }
 
   @Override
   public int getStr() {
-    return transformed ? str + beastBonus() : str;
+    return str + beastBonus();
   }
 
   @Override
   public int getSpeed() {
     return speed + beastBonus();
+  }
+
+  @Override
+  public int getDef() {
+    return getStr() + getSpeed();
   }
 
   @Override

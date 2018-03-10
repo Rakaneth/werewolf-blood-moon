@@ -13,6 +13,7 @@ public class Creature
   int        str;
   double     vision;
   double[][] visible;
+  boolean isPredator;
   static Map<String, Creature> bluePrints;
 
   public Creature() {
@@ -63,6 +64,8 @@ public class Creature
     return vision;
   }
 
+  public boolean getIsPredator() { return isPredator; }
+
   public double[][] getVisible() {
     return visible;
   }
@@ -82,5 +85,7 @@ public class Creature
   public boolean canSee(GameObject other) {
     return canSee(other.pos);
   }
+
+  public int getDef() { return str + speed; }
 
 }
