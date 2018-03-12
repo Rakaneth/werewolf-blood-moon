@@ -88,4 +88,8 @@ public class Creature
 
   public int getDef() { return str + speed; }
 
+  public boolean canSmell(GameObject thing) {
+    return thing.hasScent && pos.distance(thing.pos) <= getVision() * 2;
+  }
+
 }

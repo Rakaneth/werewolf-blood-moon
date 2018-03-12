@@ -76,10 +76,4 @@ public class Werewolf
     else
       shiftUp();
   }
-
-  public boolean canSmell(GameObject thing) {
-    return thing.hasScent && pos.distance(thing.pos) <= getVision() * 2;
-  }
-
-
 }
